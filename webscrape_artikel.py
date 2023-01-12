@@ -1,63 +1,89 @@
 import requests
 from bs4 import BeautifulSoup
+from random import randint
+from time import sleep
+from bs4.element import Comment
+
+print('pang')
 
 
-class Artikkel:
-    def __init__(self, URL):
-        self.URL = URL
-        page = requests.get(self.URL)
-        self.soup = BeautifulSoup(page.content, "html.parser")
-        self.text_elements = self.soup.find("div", class_="import-decoration u-mb32").p
-        self.fasiliteter = self.soup.find("ul", class_="list list--bullets list--cols1to2 u-mb16").p
+def add_links():
+    urls = []
+    for i in range(100):
+        if i == 0:
+            url = f'https://www.finn.no/realestate/homes/search.html?location=0.0.20061&sort=PUBLISHED_DESC'
+        else:
+            url = f'https://www.finn.no/realestate/homes/search.html?location=0.20061&page={i}&sort=PUBLISHED_DESC'
+        reqs = requests.get(url)
+        soup = BeautifulSoup(reqs.text, 'html.parser')
+        urls.extend(links_on_page(soup)) 
+        if len(urls) > 1000:
+            return urls
+        sleep(randint(2,30))
+    return urls
 
-    #scrape fasilities
+def links_on_page(s):
+    urls = []
+    for link in s.find_all('a', class_="link link--dark sf-ad-link sf-realestate-heading" ):
+        raw = link.get('href')
+        if "homes" in raw:
+            urls.append(raw)
+    return urls
+
+def tag_visible(element):
+    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
+
+def find_tags(url):
+    reqs = requests.get(url)
+    soup = BeautifulSoup(reqs.text, 'html.parser')
+    texts = soup.findAll(text=True)
+    visible_texts = filter(tag_visible, texts)  
+    return u" ".join(t.strip() for t in visible_texts)
+
+
+urls = []
+with open('urls.txt') as f:
+    content = f.readlines()
+    for line in content:
+        if not line:
+            break
+        urls.append(line.strip())
+
+def find_el(url, tag, name):
+    reqs = requests.get(url)
+    soup = BeautifulSoup(reqs.text, 'html.parser')
+    tekst = []
+    for t in soup.find_all(tag, class_= name):
+        tekst.append(t.text)
+    return tekst
+
+def scrape_stats(url):
+    reqs = requests.get(url)
+    soup = BeautifulSoup(reqs.text, 'html.parser')
+    stats_dict = dict()
+    stats = soup.find("dl", class_="grid md:grid-cols-3 grid-cols-2 pb-8 gap-16 m-0")
+    stats_val = stats.find_all('dd')
+    stats_key = stats.find_all('dt')
     
+    for i in range(len(stats) - 1):
+        stats_dict[stats_key[i].text] = stats_val[i].text
+
+    return stats_dict
+
+
+#for i in range(10):
+   # print(find_el(urls[i], "div", "pt-16 sm:pt-40"))
+   # print(find_el(urls[i], "div", "py-4 break-words"))
+   #print(scrape_stats(urls[i]))
 
 
 
 
-    #scrape the basic stats
-    def scrape_stats(self):
-        self.stats_dict = dict()
-        stats = self.soup.find("dl", class_="definition-list definition-list--inline")
-        stats_val = stats.find_all('dd')
-        stats_key = stats.find_all('dt')
-        
-        for i in range(3):
-            val = str(stats_val[i]).replace('<dd>', '').replace('</dd>', '').strip()
-            key = str(stats_key[i]).replace('<dt>', '').replace('</dt>', '').strip()
-            self.stats_dict[key] = val
 
-
-        key = str(stats_key[-1]).replace('<dt>', '').replace('</dt>', '').strip()
-        val = str(stats_val[-1]).split('"')
-        val = val[1].split(':')
-        self.stats_dict['Oppvarmingskarakter'] = val[-1].strip()
-        val = val[1].split('.')
-        self.stats_dict['Energikarakter'] = val[0].strip()
-
-    def print_results(self):
-        print(f'text elements : {self.text_elements}')
-        print(f'fasiliteter {self.fasiliteter}')
-        print(f'dict {self.stats_dict}')
-
-
-A1 = Artikkel("https://www.finn.no/realestate/lettings/ad.html?finnkode=287010242")       
-A1.scrape_stats()
-A1.print_results()
-
-
-       
-
-#stats_svar = stats.find_all('dd')
-
-#print(stats_svar)
-
-#print(text_elements.p)
-
-##dictinary = {"prompt": str(fasiliteter.text) +  " " + str(stats.text), "completion": text_elements.text}
-
-
-
+print('pang pang')
         
 
