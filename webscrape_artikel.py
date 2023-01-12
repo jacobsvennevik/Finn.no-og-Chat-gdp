@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from random import randint
 from time import sleep
 from bs4.element import Comment
-
 print('pang')
 
 
@@ -35,27 +34,29 @@ def links_on_page(s):
             urls.append(raw)
     return urls
 
-urls = []
-with open('urls.txt') as f:
-    content = f.readlines()
-    for line in content:
-        if not line:
-            break
-        urls.append(line.strip())
+def read_urls(i):
+    urls = []
+    with open('urls.txt') as f:
+        content = f.readlines()
+        for count, line in enumerate(content):
+            if count > i:
+                return urls
+            if not line:
+                break
+            urls.append(line.strip())
+        f.close
+    return urls
 
-def find_fas(url, tag, name):
-    soup = get_html(url)
+def find_fas(soup, tag, name):
     tekst = []
     for t in soup.find_all(tag, class_= name):
         tekst.append(t.text)
     return tekst
 
-def find_el(url, tag, name):
-    soup = get_html(url)
+def find_el(soup, tag, name):
     return soup.find(tag, class_= name).text
 
-def scrape_stats(url):
-    soup = get_html(url)
+def scrape_stats(soup):
     stats_dict = dict()
     stats = soup.find("dl", class_="grid md:grid-cols-3 grid-cols-2 pb-8 gap-16 m-0")
     stats_val = stats.find_all('dd')
@@ -67,14 +68,18 @@ def scrape_stats(url):
     return stats_dict
 
 
-for i in range(10):
-   #print(find_el(urls[i], "div", "pt-16 sm:pt-40"))
-   #print(find_fas(urls[i], "div", "py-4 break-words"))
-   #print(scrape_stats(urls[i]))
-   #print(find_el(urls[i], "span", "pl-4"))
 
 
+def run():
+    for url in read_urls(10):
+        soup = get_html(url)
+        #print(find_el(soup, "div", "pt-16 sm:pt-40"))
+        #print(find_fas(soup, "div", "py-4 break-words"))
+        #print(scrape_stats(soup))
+        
 
+ 
+run()
 
 
 print('pang pang')
