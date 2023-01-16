@@ -1,5 +1,3 @@
-import requests
-from bs4 import BeautifulSoup
 from random import randint
 from time import sleep
 from Artikkel_Scraper import get_html
@@ -39,3 +37,14 @@ def read_urls(i):
         f.close
     return urls
 
+def write_file():
+    links = add_links()
+    with open ('urls.txt', 'w') as f:
+        for link in links:
+            if "homes" in link:
+                f.write(link)
+                f.write('\n')
+    f.close
+
+
+write_file()
