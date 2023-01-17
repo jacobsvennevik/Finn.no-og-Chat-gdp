@@ -1,42 +1,52 @@
-from Artikkel_Scraper  import Artikkel_Scraper 
+import Artikkel_Scraper 
 from url_getter import read_urls
 import json
 from time import sleep
 from random import randint
 from threading import Thread
 import numpy as np
+import safe_list
 
-def run_urls(url_li):
-    with open('plots.jsonl', 'a') as outfile: 
-        for url in url_li:
-            sleep(randint(2,30))
-            scaper = Artikkel_Scraper(url)
-            #få ut all info
-            adr = scaper.find_el("span", "pl-4")
-            fasiliteter = scaper.find_fas("div", "py-4 break-words")
-            nokkelinfo = scaper.scrape_stats()
-            skoleKollektiv_vei = scaper.find_kollektiv_skole()
-            passerFor = scaper.find_passer_for("dp__cardContentListItem__3tbfT")
-            kontaktPers = scaper.shadow_scrape("h3[aria-label='Kontaktperson']")
-            #lage prompt
-            prompt = f'Skriv en profesjonell salgsannonse på nettsiden Finn.no til en bolig med adresse: {adr}. Boligen har følgende fasiliteter {fasiliteter}. Boligen har følgende nøkkelinfo {nokkelinfo}. Det tar så lang tid å gå til diverse kollektivtransport: {skoleKollektiv_vei}. Naboloaget passer for {passerFor}og eiendomsmegleren er {kontaktPers} \n \n \n '
-            #lager completion
-            completion = scaper.find_text_with_breaks("div", "pt-16 sm:pt-40")
+def run_urls(url_li, data):
+    for url in url_li:
+        sleep(randint(2,30))
+        scaper = Artikkel_Scraper(url)
+        #få ut all info
+        adr = scaper.find_el("span", "pl-4")
+        fasiliteter = scaper.find_fas("div", "py-4 break-words")
+        nokkelinfo = scaper.scrape_stats()
+        skoleKollektiv_vei = scaper.find_kollektiv_skole()
+        passerFor = scaper.find_passer_for("dp__cardContentListItem__3tbfT")
+        kontaktPers = scaper.shadow_scrape("h3[aria-label='Kontaktperson']")
+        #lage prompt
+        prompt = f'Skriv en profesjonell salgsannonse på nettsiden Finn.no til en bolig med adresse: {adr}. Boligen har følgende fasiliteter {fasiliteter}. Boligen har følgende nøkkelinfo {nokkelinfo}. Det tar så lang tid å gå til diverse kollektivtransport: {skoleKollektiv_vei}. Naboloaget passer for {passerFor}og eiendomsmegleren er {kontaktPers} \n \n \n '
+        #lager completion
+        completion = scaper.find_text_with_breaks("div", "pt-16 sm:pt-40")
 
-            info = {'prompt': prompt, 'completion': completion}
-
-            #legger allt i json
-            json.dump(info, outfile)
-            outfile.write('\n')
-    outfile.close()
+        info = {'prompt': prompt, 'completion': completion}
+        
 
 
 
 def do_split(lst, slices):
     return [sl.tolist()for sl in np.split(lst, slices)]
 
+li = do_split(read_urls(1000), [150, 300, 450, 600, 750, 900])
 
-def run():
+safe_list = ThreadSafeList()
+# configure threads to add to the list
+threads = [Thread(target=add_items, args=(safe_list,)) for i in range(10)]
+# start threads
+for thread in threads:
+    thread.start()
+# wait for all threads to terminate
+print('Main waiting for threads...')
+for thread in threads:
+    thread.join()
+# report the number of items in the list
+print(f'List size: {safe_list.length()}')
+
+""" def run():
     # med 6 stykker var det noe som ble feil, ble krøll på noen
     li = do_split(read_urls(1000), [150, 300, 450, 600, 750, 900])
     thread1 = Thread(target=run_urls, args=[li[0]])
@@ -61,7 +71,7 @@ def run():
     thread4.join()
     thread5.join()
     thread6.join() 
-    thread7.join() 
+    thread7.join()  """
 
 
 
