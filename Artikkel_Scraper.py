@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 
 
 
+
 def get_html(url):
     reqs = requests.get(url)
     soup = BeautifulSoup(reqs.text, 'html.parser')
@@ -31,6 +32,9 @@ class Artikkel_Scraper:
     def find_el(self, tag, name):
         return self.soup.find(tag, class_= name).text
 
+    def find_text_with_breaks(self, tag, name):
+        soup = BeautifulSoup(str(self.soup).replace('<br/>', '\n'), 'html.parser')
+        return soup.find(tag, class_= name).text
 
     #SCRAPE fasiliteter balkong/tersasse osv
     def scrape_stats(self):
@@ -71,11 +75,6 @@ class Artikkel_Scraper:
                 li.append(c)
         return li
 
-
-
-    
-
-
  
 """ def run():
 
@@ -96,6 +95,6 @@ class Artikkel_Scraper:
 run() """
 
 
-print('pang pang')
+
         
 
