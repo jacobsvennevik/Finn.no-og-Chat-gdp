@@ -1,11 +1,11 @@
-import Artikkel_Scraper 
+from Artikkel_Scraper import Artikkel_Scraper
 from url_getter import read_urls
 import json
 from time import sleep
 from random import randint
 from threading import Thread
 import numpy as np
-import safe_list
+from safe_list import ThreadSafeList
 
 def run_urls(url_li, data):
     for url in url_li:
@@ -24,54 +24,27 @@ def run_urls(url_li, data):
         completion = scaper.find_text_with_breaks("div", "pt-16 sm:pt-40")
 
         info = {'prompt': prompt, 'completion': completion}
-        
-
+        data.append(info)
 
 
 def do_split(lst, slices):
     return [sl.tolist()for sl in np.split(lst, slices)]
 
-li = do_split(read_urls(1000), [150, 300, 450, 600, 750, 900])
+li = do_split(read_urls(1500), [150, 300, 450, 600, 750, 900])
 
 safe_list = ThreadSafeList()
-# configure threads to add to the list
-threads = [Thread(target=add_items, args=(safe_list,)) for i in range(10)]
-# start threads
+threads = [Thread(target=run_urls, args=(li[i], safe_list)) for i in range(len(li))]
+
 for thread in threads:
     thread.start()
-# wait for all threads to terminate
-print('Main waiting for threads...')
+
 for thread in threads:
     thread.join()
-# report the number of items in the list
-print(f'List size: {safe_list.length()}')
 
-""" def run():
-    # med 6 stykker var det noe som ble feil, ble krøll på noen
-    li = do_split(read_urls(1000), [150, 300, 450, 600, 750, 900])
-    thread1 = Thread(target=run_urls, args=[li[0]])
-    thread2 = Thread(target=run_urls, args=[li[1]])
-    thread3 = Thread(target=run_urls, args=[li[2]])
-    thread4 = Thread(target=run_urls, args=[li[3]])
-    thread5 = Thread(target=run_urls, args=[li[4]])
-    thread6 = Thread(target=run_urls, args=[li[5]])
-    thread7 = Thread(target=run_urls, args=[li[6]])
-
-    thread1.start()
-    thread2.start()
-    thread3.start()
-    thread4.start()
-    thread5.start()
-    thread6.start()
-    thread7.start()
-
-    thread1.join()
-    thread2.join()
-    thread3.join()
-    thread4.join()
-    thread5.join()
-    thread6.join() 
-    thread7.join()  """
+with open('plots.jsonl2', 'w') as outfile:
+    for i in range(safe_list.length()):
+        json.dump(safe_list.pop(), outfile)
+        outfile.write('\n')
 
 
 
