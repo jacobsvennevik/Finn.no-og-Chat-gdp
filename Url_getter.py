@@ -47,4 +47,3 @@ def write_file():
     f.close
 
 
-write_file()
