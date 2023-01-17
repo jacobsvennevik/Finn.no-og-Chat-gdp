@@ -36,12 +36,8 @@ def do_split(lst, slices):
     return [sl.tolist()for sl in np.split(lst, slices)]
 
 
-
-
-
-
-
-if __name__ == '__main__':
+def run():
+    # med 6 stykker var det noe som ble feil, ble krøll på noen
     li = do_split(read_urls(1000), [150, 300, 450, 600, 750, 900])
     thread1 = Thread(target=run_urls, args=[li[0]])
     thread2 = Thread(target=run_urls, args=[li[1]])
@@ -66,5 +62,10 @@ if __name__ == '__main__':
     thread5.join()
     thread6.join() 
     thread7.join() 
+
+
+
+
+    
             
                 
