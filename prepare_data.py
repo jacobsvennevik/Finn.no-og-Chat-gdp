@@ -9,6 +9,7 @@ from safe_list import ThreadSafeList
 
 def run_urls(url_li, data):
     for url in url_li:
+        # mulig unødvendig med sleep siden jeg bruker multithreading blir brukt
         sleep(randint(2,30))
         scaper = Artikkel_Scraper(url)
         #få ut all info
