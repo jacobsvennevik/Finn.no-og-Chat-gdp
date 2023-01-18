@@ -35,7 +35,7 @@ def do_split(lst, slices):
 li = do_split(read_urls(1500), [150, 300, 450, 600, 750, 900])
 
 safe_list = ThreadSafeList()
-threads = [Thread(target=run_urls, args=(li[i], safe_list)) for i in range(2)]
+threads = [Thread(target=run_urls, args=(li[i], safe_list)) for i in range(len(li))]
 
 for thread in threads:
     thread.start()
