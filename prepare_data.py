@@ -28,13 +28,14 @@ def run_urls(url_li, data):
         data.append(info)
 
 
+
 def do_split(lst, slices):
     return [sl.tolist()for sl in np.split(lst, slices)]
 
 li = do_split(read_urls(1500), [150, 300, 450, 600, 750, 900])
 
 safe_list = ThreadSafeList()
-threads = [Thread(target=run_urls, args=(li[i], safe_list)) for i in range(len(li))]
+threads = [Thread(target=run_urls, args=(li[i], safe_list)) for i in range(2)]
 
 for thread in threads:
     thread.start()
@@ -42,9 +43,9 @@ for thread in threads:
 for thread in threads:
     thread.join()
 
-with open('plots.jsonl2', 'w') as outfile:
+with open('plots.jsonl', 'w', encoding='utf-8') as outfile:
     for i in range(safe_list.length()):
-        json.dump(safe_list.pop(), outfile)
+        json.dump(safe_list.pop(), outfile, ensure_ascii=False)
         outfile.write('\n')
 
 
